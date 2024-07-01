@@ -10,6 +10,7 @@ const uint8_t SIG_BS[SIG_SIZE] = { 0x37, 0x80, 0x40, 0x12 };
 
 #define FILENAME argv[1]
 
+const char outfile_prefix[] = "tex";
 
 // Note to self:
 // intel processors are little-endian
@@ -19,16 +20,6 @@ const uint8_t SIG_BS[SIG_SIZE] = { 0x37, 0x80, 0x40, 0x12 };
 //  - n64: little-endian and probably byte-swapped
 
 
-// int8_t c; // Used to handle EOF, which is -1
-//           // Not necessary since I'm using a constrained for loop
-// for(int i = 0; i < sz; i++) {
-//   if((c = fgetc(fp)) == EOF) {
-//     printf("\n");
-//     break;
-//   }
-
-//   printf("%c", c);
-// }
 
 
 void print_usage(FILE* stream, char* path) {
@@ -55,6 +46,9 @@ int is_valid_sig_bs(uint8_t* sig) {
   return 1;
 }
 
+void decompress_mio0_block(FILE* fp_rom, FILE* fp_out, int start) {
+}
+
 int main(int argc, char** argv) {
 
   if(argc != 2) {
@@ -63,12 +57,13 @@ int main(int argc, char** argv) {
   }
 
   int result;
+  int i;
 
 
 
   // Open file
-  FILE* fp = fopen(FILENAME, "rb");
-  if(fp == NULL) {
+  FILE* fp_rom = fopen(FILENAME, "rb");
+  if(fp_rom == NULL) {
     fprintf(stderr, "Failed to open file: %s", FILENAME);
     return 1;
   }
@@ -92,14 +87,14 @@ int main(int argc, char** argv) {
 
 
   // Read signature
-  fseek(fp, 0L, SEEK_SET);
+  fseek(fp_rom, 0L, SEEK_SET);
   uint8_t sig[SIG_SIZE];
-  fread(sig, sizeof(uint8_t), 4, fp);
+  fread(sig, sizeof(uint8_t), 4, fp_rom);
 
 
   // Print signature
   printf("ROM signature: 0x");
-  for(int i = 0; i < SIG_SIZE; i++) {
+  for(i = 0; i < SIG_SIZE; i++) {
     printf("%2x", sig[i]);
   }
   printf("\n");
@@ -122,26 +117,58 @@ int main(int argc, char** argv) {
 
 
 
+
   // Count instances of MIO0
   int count = 0;
+  int locations[100];
   uint8_t c;
-  for(int i = SIG_SIZE; i < sz; i++) {
-    c = fgetc(fp); // This could technically be EOF (-1)
-
-    // This is evil but idc
-    if(c == 'M') {
-      if(fgetc(fp) == 'I') {
-        if(fgetc(fp) == 'O') {
-          if(fgetc(fp) == '0') {
-            count++;
-            continue;
-          }
-        }
-      }
-      // Return back to where we were for potential case of "MMMMMMIO0"
-      fseek(fp, 0L, i);
+  for(i = SIG_SIZE; i < sz; i++) {
+    c = fgetc(fp_rom); // This could technically be EOF (-1)
+    if(count == 100) {
+      printf("Reached max MIO0 sections (because I'm lazy)\n");
+      break;
     }
+
+    if(c != 'M') continue;
+
+    if(
+      (fgetc(fp_rom) == 'I')
+      && (fgetc(fp_rom) == 'O')
+      && (fgetc(fp_rom) == '0')
+    ) {
+      locations[count++] = i;
+      continue;
+    }
+
+    // Return back to where we were for potential case of "MMMMMMIO0"
+    fseek(fp_rom, 0L, i);
   }
 
-  printf("Instances of\"MIO0\" found: %d\n", count);
+  printf("Found %d instances of \"MIO0\"\n", count);
+
+
+
+
+
+  for(i = 0; i < count; i++) {
+    printf("DECOMPRESSING BLOCK 1: 0x%x ----------------\n", locations[i]);
+
+    char filename[30];
+    snprintf(filename, 30, "0x%x.texture", locations[i]);
+
+    // Open output file for writing
+    FILE* fp_outfile = fopen(filename, "wb");
+    if(fp_outfile == NULL) {
+      fprintf(stderr, "Failed to open file: %s", FILENAME);
+      continue;
+    }
+    printf("Opened file: %s\n", FILENAME);
+
+    decompress_mio0_block(fp_rom, fp_outfile, locations[i]);
+
+    printf("\n");
+    fclose(fp_outfile);
+  }
+
+  fclose(fp_rom);
 }
