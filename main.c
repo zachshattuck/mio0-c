@@ -66,6 +66,7 @@ int main(int argc, char** argv) {
 
 
 
+  // Open file
   FILE* fp = fopen(FILENAME, "rb");
   if(fp == NULL) {
     fprintf(stderr, "Failed to open file: %s", FILENAME);
@@ -75,6 +76,7 @@ int main(int argc, char** argv) {
 
 
 
+  // Get size of file
   struct stat st;
   result = stat(FILENAME, &st); // How can I use the FILE pointer from `fopen`?
   if(result != 0) {
@@ -83,26 +85,28 @@ int main(int argc, char** argv) {
   }
   int sz = st.st_size;
   printf("File size: %d bytes\n", sz);
-
-
-
   if(sz < SIG_SIZE) {
     fprintf(stderr, "Invalid ROM file: Too small.\n");
     return 1;
   }
 
+
+  // Read signature
   fseek(fp, 0L, SEEK_SET);
-  // uint8_t* sig[SIG_SIZE]; <-- Stop doing this!!
   uint8_t sig[SIG_SIZE];
   fread(sig, sizeof(uint8_t), 4, fp);
 
 
+  // Print signature
   printf("ROM signature: 0x");
   for(int i = 0; i < SIG_SIZE; i++) {
     printf("%2x", sig[i]);
   }
   printf("\n");
 
+
+
+  // Ensure signature is not byte-swapped (I would love to support this someday)
   int is_valid = is_valid_sig(sig);
   if(!is_valid) {
     int is_bs = is_valid_sig_bs(sig);
@@ -114,8 +118,30 @@ int main(int argc, char** argv) {
 
     return 1;
   }
-
   printf("Valid signature.\n");
 
-  
+
+
+  // Count instances of MIO0
+  int count = 0;
+  uint8_t c;
+  for(int i = SIG_SIZE; i < sz; i++) {
+    c = fgetc(fp); // This could technically be EOF (-1)
+
+    // This is evil but idc
+    if(c == 'M') {
+      if(fgetc(fp) == 'I') {
+        if(fgetc(fp) == 'O') {
+          if(fgetc(fp) == '0') {
+            count++;
+            continue;
+          }
+        }
+      }
+      // Return back to where we were for potential case of "MMMMMMIO0"
+      fseek(fp, 0L, i);
+    }
+  }
+
+  printf("Instances of\"MIO0\" found: %d\n", count);
 }
