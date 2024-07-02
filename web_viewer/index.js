@@ -1,3 +1,10 @@
+/**
+ * References:
+ * - https://hack64.net/wiki/doku.php?id=super_mario_64:textures
+ * - https://n64squid.com/homebrew/n64-sdk/textures/image-formats/
+ */
+
+
 let cnv = document.getElementById("canvas");
 let ctx = cnv.getContext("2d");
 ctx.fillStyle = "#000000";
