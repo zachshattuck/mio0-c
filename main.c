@@ -99,8 +99,9 @@ void decompress_mio0_block(FILE* fp_rom, unsigned int fp_rom_size, int start) {
     fprintf(stderr, "Uncompressed offset is past EOF");
     return;
   }
-  uint8_t* output = (uint8_t*)malloc(decompressed_length);
 
+
+  uint8_t* output = (uint8_t*)malloc(decompressed_length);
 
   int bytes_written = 0;
 
