@@ -128,10 +128,6 @@ void decompress_mio0_block(FILE* fp_rom, unsigned int fp_rom_size, int start) {
         output[bytes_written++] = fgetc(fp_rom);
         uncompressed_idx++;
 
-        if(bytes_written == decompressed_length) {
-          break;
-        }
-
       } else {
 
         uint8_t data[2];
@@ -168,7 +164,12 @@ void decompress_mio0_block(FILE* fp_rom, unsigned int fp_rom_size, int start) {
         bytes_written += len;
       }
 
+
+      if(bytes_written == decompressed_length) {
+        break;
+      }
       fseek(fp_rom, start+0x10+layout_idx, SEEK_SET);
+
       mask>>=1;
     }
 
