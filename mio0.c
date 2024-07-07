@@ -172,4 +172,4 @@ void mio0_decompress_f(FILE* fp_rom, unsigned int fp_rom_size, int start, uint8_
 }
 
 // TODO:
-// void mio0_compress() { }
+// void mio0_compress(uint8_t** in, uint8_t** out) { }
