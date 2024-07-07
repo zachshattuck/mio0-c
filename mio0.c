@@ -28,7 +28,8 @@ int is_valid_sig_bs(uint8_t* sig) {
 
 
 /**
- * Given a ROM file and the location of the MIO0 block, this function will decompress the block.
+ * Given a ROM file pointer, the size of the ROM file, and the location of the MIO0 block within the file,
+ * this function will decompress the block.
  */
 void mio0_decompress_f(FILE* fp_rom, unsigned int fp_rom_size, int start, uint8_t** out, uint8_t* out_size) {
   int i = start;
