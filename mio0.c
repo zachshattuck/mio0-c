@@ -1,6 +1,31 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define HEADER_SIZE 0x10
+#define SIG_SIZE 4
+const uint8_t SIG[SIG_SIZE] = { 0x80, 0x37, 0x12, 0x40 };
+const uint8_t SIG_BS[SIG_SIZE] = { 0x37, 0x80, 0x40, 0x12 };
+
+int is_valid_sig(uint8_t* sig) {
+  for(int i = 0; i < SIG_SIZE; i++) {
+    if(sig[i] != SIG[i]) {
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+int is_valid_sig_bs(uint8_t* sig) {
+  for(int i = 0; i < SIG_SIZE; i++) {
+    if(sig[i] != ((uint8_t*)SIG_BS)[i]) {
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
 
 /**
  * Given a ROM file and the location of the MIO0 block, this function will decompress the block.
@@ -9,14 +34,14 @@ void mio0_decompress_f(FILE* fp_rom, unsigned int fp_rom_size, int start, uint8_
   int i = start;
   fseek(fp_rom, start, SEEK_SET);
 
-  if(i + 0x10 > fp_rom_size) {
+  if(i + HEADER_SIZE > fp_rom_size) {
     fprintf(stderr, "Invalid MIO0 block");
     return;
   }
 
 
-  uint8_t header[0x10];
-  for(i = 0; i < 0x10; i++) {
+  uint8_t header[HEADER_SIZE];
+  for(i = 0; i < HEADER_SIZE; i++) {
     header[i] = fgetc(fp_rom);;
   }
 
@@ -134,7 +159,7 @@ void mio0_decompress_f(FILE* fp_rom, unsigned int fp_rom_size, int start, uint8_
       if(bytes_written == decompressed_length) {
         break;
       }
-      fseek(fp_rom, start+0x10+layout_idx, SEEK_SET);
+      fseek(fp_rom, start+HEADER_SIZE+layout_idx, SEEK_SET);
 
       mask>>=1;
     }

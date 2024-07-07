@@ -1,2 +1,2 @@
 #!/bin/bash
-gcc main.c -o main
+gcc extract_rom.c -o extract_rom

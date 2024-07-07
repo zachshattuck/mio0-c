@@ -5,49 +5,14 @@
 
 #include "mio0.c"
 
-#define HEADER_SIZE 0x10
-#define SIG_SIZE 4
-const uint8_t SIG[SIG_SIZE] = { 0x80, 0x37, 0x12, 0x40 };
-const uint8_t SIG_BS[SIG_SIZE] = { 0x37, 0x80, 0x40, 0x12 };
-
 #define ROM_FILENAME argv[1]
 
 const char outfile_prefix[] = "tex";
-
-// Note to self:
-// intel processors are little-endian
-// ROM endiannesses:
-//  - z64: big-endian
-//  - v64: little-endian
-//  - n64: little-endian and probably byte-swapped
-
-
 
 
 void print_usage(FILE* stream, char* path) {
   fprintf(stream, "Usage: %s path/to/ROM", path);
 }
-
-int is_valid_sig(uint8_t* sig) {
-  for(int i = 0; i < SIG_SIZE; i++) {
-    if(sig[i] != SIG[i]) {
-      return 0;
-    }
-  }
-
-  return 1;
-}
-
-int is_valid_sig_bs(uint8_t* sig) {
-  for(int i = 0; i < SIG_SIZE; i++) {
-    if(sig[i] != ((uint8_t*)SIG_BS)[i]) {
-      return 0;
-    }
-  }
-
-  return 1;
-}
-
 
 
 int main(int argc, char** argv) {
