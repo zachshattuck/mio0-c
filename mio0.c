@@ -91,7 +91,7 @@ void mio0_decompress_f(FILE* fp_rom, unsigned int fp_rom_size, int start, uint8_
 
 
 
-  uint8_t* output = (uint8_t*)malloc(decompressed_length);
+  uint8_t* buffer = (uint8_t*)malloc(decompressed_length);
 
   int bytes_written = 0;
 
@@ -116,7 +116,7 @@ void mio0_decompress_f(FILE* fp_rom, unsigned int fp_rom_size, int start, uint8_
       if(layout_bit) {
 
         fseek(fp_rom, start+uncompressed_offset+uncompressed_idx, SEEK_SET);
-        output[bytes_written++] = fgetc(fp_rom);
+        buffer[bytes_written++] = fgetc(fp_rom);
         uncompressed_idx++;
 
       } else {
@@ -149,7 +149,7 @@ void mio0_decompress_f(FILE* fp_rom, unsigned int fp_rom_size, int start, uint8_
         }
 
         for(i = 0; i < len; i++) {
-          output[bytes_written + i] = output[bytes_written + i - off];
+          buffer[bytes_written + i] = buffer[bytes_written + i - off];
         }
 
         bytes_written += len;
@@ -167,7 +167,7 @@ void mio0_decompress_f(FILE* fp_rom, unsigned int fp_rom_size, int start, uint8_
   }
 
 
-  *out = output;
+  *out = buffer;
   *out_size = decompressed_length;
 }
 
