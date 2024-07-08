@@ -5,10 +5,22 @@
 
 #include "mio0.c"
 
-#define ROM_FILENAME argv[1]
-
 const char outfile_prefix[] = "tex";
 
+
+
+// Read at most `n` characters (newline included) into `str`.
+// If present, the newline is removed (replaced by the null terminator).
+void s_gets(char* str, int n)
+{
+  char* str_read = fgets(str, n, stdin);
+  if (!str_read) return;
+
+  int i = 0;
+  while (str[i] != '\n' && str[i] != '\0') i++;
+
+  if (str[i] == '\n') str[i] = '\0';
+}
 
 void print_usage(FILE* stream, char* path) {
   fprintf(stream, "Usage: %s path/to/ROM", path);
@@ -17,9 +29,24 @@ void print_usage(FILE* stream, char* path) {
 
 int main(int argc, char** argv) {
 
-  if(argc != 2) {
+  char filename[255];
+
+  if(argc > 2) {
     print_usage(stderr, argv[0]);
-    return 1;
+    return -1;
+  }
+
+  if(argc == 2) {
+    int i = 0;
+    while(argv[1][i] != '\0' && argv[1][i] != '\0') {
+      filename[i] = argv[1][i];
+      i++;
+    }
+    filename[i] = '\0';
+  } else {
+    printf("Enter ROM path: ");
+    s_gets(filename, 255);
+    printf("\n");
   }
 
   int result;
@@ -28,20 +55,20 @@ int main(int argc, char** argv) {
 
 
   // Open file
-  FILE* fp_rom = fopen(ROM_FILENAME, "rb");
+  FILE* fp_rom = fopen(filename, "rb");
   if(fp_rom == NULL) {
-    fprintf(stderr, "Failed to open file: %s", ROM_FILENAME);
+    fprintf(stderr, "Failed to open file: %s", filename);
     return 1;
   }
-  printf("Opened file: %s\n", ROM_FILENAME);
+  printf("Opened file: %s\n", filename);
 
 
 
   // Get size of file
   struct stat st;
-  result = stat(ROM_FILENAME, &st); // How can I use the FILE pointer from `fopen`?
+  result = stat(filename, &st); // How can I use the FILE pointer from `fopen`?
   if(result != 0) {
-    fprintf(stderr, "Failed to stat file: %s", ROM_FILENAME);
+    fprintf(stderr, "Failed to stat file: %s", filename);
     return 1;
   }
   unsigned int sz = st.st_size;
