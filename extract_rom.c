@@ -11,6 +11,7 @@ const char outfile_prefix[] = "tex";
 
 // Read at most `n` characters (newline included) into `str`.
 // If present, the newline is removed (replaced by the null terminator).
+// https://alexandra-zaharia.github.io/posts/how-to-read-safely-from-stdin-in-c/
 void s_gets(char* str, int n)
 {
   char* str_read = fgets(str, n, stdin);
@@ -22,9 +23,12 @@ void s_gets(char* str, int n)
   if (str[i] == '\n') str[i] = '\0';
 }
 
+
+
 void print_usage(FILE* stream, char* path) {
   fprintf(stream, "Usage: %s path/to/ROM", path);
 }
+
 
 
 int main(int argc, char** argv) {
